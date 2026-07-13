@@ -1,0 +1,3 @@
+-keep class com.pushfa.sdk.PushfaFirebaseMessagingService { *; }
+-keep class com.pushfa.sdk.internal.PushfaClickReceiver { *; }
+-keep class com.pushfa.sdk.internal.PushfaReportWorker { *; }
