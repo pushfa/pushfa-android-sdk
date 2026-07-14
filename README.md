@@ -1,5 +1,7 @@
 # Pushfa Android SDK v2
 
+[![JitPack](https://jitpack.io/v/pushfa/pushfa-android-sdk.svg)](https://jitpack.io/#pushfa/pushfa-android-sdk)
+
 Native Android client for Pushfa subscriber identity, Firebase token registration,
 notification rendering, topics, External ID, custom aliases, RetenX events, visits,
 delivery reports, and click reports.
@@ -74,8 +76,8 @@ dependencies {
 
 Do not use `com.pushfa:pushfa-android-sdk`; that coordinate requires a separate
 Pushfa Maven repository and is not available from Google Maven, Maven Central, or
-JitPack. Until the 2.0.3 tag has a successful JitPack build, use the downloaded
-source module.
+JitPack. The `2.0.3` JitPack build is published and verified; the downloaded
+source module remains available as an offline/fallback installation.
 
 ## Upgrade from 2.0.1 or 2.0.2 to 2.0.3
 
