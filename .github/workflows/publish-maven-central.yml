@@ -8,8 +8,6 @@ on:
         required: true
         type: string
   push:
-    branches:
-      - main
     tags:
       - "*.*.*"
 
@@ -22,14 +20,10 @@ concurrency:
 
 jobs:
   publish:
-    if: >-
-      github.repository == 'pushfa/pushfa-android-sdk' &&
-      (github.ref_type == 'tag' ||
-      github.event_name == 'workflow_dispatch' ||
-      contains(github.event.head_commit.message, '[publish-maven-central]'))
+    if: github.repository == 'pushfa/pushfa-android-sdk'
     runs-on: ubuntu-latest
     env:
-      RELEASE_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || github.event_name == 'workflow_dispatch' && inputs.version || '2.0.4' }}
+      RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
       ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
       ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
       ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
