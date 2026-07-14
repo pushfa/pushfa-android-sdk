@@ -4,12 +4,12 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.pushfa"
-version = "2.0.2"
+group = providers.environmentVariable("GROUP").orElse("com.pushfa").get()
+version = providers.environmentVariable("VERSION").orElse("2.0.3").get()
 
 android {
     namespace = "com.pushfa.sdk"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 23
@@ -33,9 +33,9 @@ android {
 }
 
 dependencies {
-    api("com.google.firebase:firebase-messaging:25.1.0")
-    implementation("androidx.core:core:1.17.0")
-    implementation("androidx.work:work-runtime:2.11.2")
+    api("com.google.firebase:firebase-messaging:24.1.2")
+    implementation("androidx.core:core:1.15.0")
+    implementation("androidx.work:work-runtime:2.10.1")
 }
 
 afterEvaluate {

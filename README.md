@@ -7,6 +7,7 @@ delivery reports, and click reports.
 ## Requirements
 
 - Android 6.0 (API 23) or newer
+- Android SDK Platform 35 or newer installed for compilation
 - JDK 17 when building the SDK source
 - A Firebase Android app whose project matches the Firebase credentials configured
   for the Pushfa service
@@ -53,34 +54,54 @@ Pushfa.initialize(this, new PushfaConfig("YOUR_PUBLIC_KEY"), result -> {
 });
 ```
 
-The module is also Maven-publish ready as
-`com.pushfa:pushfa-android-sdk:2.0.2`. Set `PUSHFA_MAVEN_URL` and optional
-`PUSHFA_MAVEN_USERNAME` / `PUSHFA_MAVEN_PASSWORD`, then run the Gradle `publish`
-task when the Pushfa Maven repository is ready.
+Tagged releases are published through JitPack. Add the repository in
+`settings.gradle.kts`, then add the SDK dependency:
 
-## Upgrade from 2.0.1 to 2.0.2
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
 
-Version 2.0.2 fixes external/body/action links on Android 12 and newer, handles
+// app/build.gradle.kts
+dependencies {
+    implementation("com.github.pushfa:pushfa-android-sdk:2.0.3")
+}
+```
+
+Do not use `com.pushfa:pushfa-android-sdk`; that coordinate requires a separate
+Pushfa Maven repository and is not available from Google Maven, Maven Central, or
+JitPack. Until the 2.0.3 tag has a successful JitPack build, use the downloaded
+source module.
+
+## Upgrade from 2.0.1 or 2.0.2 to 2.0.3
+
+Version 2.0.3 fixes external/body/action links on Android 12 and newer, handles
 relative app routes such as `/promotion`, and correctly replaces displayed
-notifications that share a `collapse_id`.
+notifications that share a `collapse_id`. Do not use the 2.0.2 Git tag: it points
+to older source without these fixes. The source module is compiled against API 35
+and uses dependency versions that can be consumed by API-35 Android projects.
 
-For a Maven installation, update the dependency and sync the project:
+For a JitPack installation, update the dependency and sync the project:
 
 ```kotlin
 dependencies {
-    implementation("com.pushfa:pushfa-android-sdk:2.0.2")
+    implementation("com.github.pushfa:pushfa-android-sdk:2.0.3")
 }
 ```
 
 For a source-module installation, download the latest SDK ZIP and replace the
 entire existing `android-sdk/pushfa` directory. Do not merge the old and new
-directories: 2.0.2 removes `PushfaClickReceiver` and adds
+directories: 2.0.3 removes `PushfaClickReceiver` and adds
 `PushfaNotificationClickActivity`. Then sync and rebuild the Android project.
 
 No migration, new permission, re-subscription, or app-data reset is required.
 Publish the result as a normal app update. Do not ask users to uninstall the old
 app, because uninstalling clears the app's local Pushfa subscriber identity and
-FCM state. Existing notifications created by 2.0.1 cannot be changed
+FCM state. Existing notifications created by an earlier SDK cannot be changed
 retroactively; clear them once before testing and then send two new messages with
 the exact same `collapse_id`.
 
@@ -208,8 +229,9 @@ override fun onMessageReceived(message: RemoteMessage) {
 
 ## Publishing
 
-The source module produces an AAR and Maven publication. Pushfa operations can
-publish it with the configured repository environment variables:
+The source module produces an AAR and Maven publication. JitPack supplies `GROUP`
+and `VERSION`, then runs the publication task configured in `jitpack.yml`. For an
+optional separate Pushfa Maven repository, operations can publish with:
 
 ```text
 PUSHFA_MAVEN_URL
@@ -221,13 +243,16 @@ Then publish with the Gradle `publish` task and expose the repository URL to
 customer apps. Do not put a Pushfa private API key or Firebase service-account JSON
 inside an Android application.
 
-After the release changes are committed, tag the exact release commit and push the
-tag. The previous release used `2.0.1`, so this release uses `2.0.2`:
+After the release changes are committed and verified, tag the exact release commit
+and push the tag. Version 2.0.2 must not be moved or reused; this corrected release
+uses 2.0.3:
 
 ```shell
-git tag -a 2.0.2 -m "Pushfa Android SDK 2.0.2"
-git push origin 2.0.2
+git tag -a 2.0.3 -m "Pushfa Android SDK 2.0.3"
+git push origin 2.0.3
 ```
 
-Publish the Maven artifact and downloadable ZIP from that same tagged commit so
-every `2.0.2` distribution contains identical source.
+Request and verify the JitPack build for that tag, then publish the downloadable
+ZIP from the same commit so every `2.0.3` distribution contains identical source.
+Follow `RELEASING.md` and do not advertise the dependency until it resolves from a
+clean consumer app.
