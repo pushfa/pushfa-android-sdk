@@ -30,20 +30,22 @@ Also install the artifact in a clean sample application and verify:
 
 ## 3. Tag and publish
 
-Create tag `2.0.3` only after the verified commit exists:
+Create the release tag only after the verified commit exists. For version 2.0.4:
 
 ```shell
-git tag -a 2.0.3 -m "Pushfa Android SDK 2.0.3"
-git push origin 2.0.3
+git tag -a 2.0.4 -m "Pushfa Android SDK 2.0.4"
+git push origin 2.0.4
 ```
 
-Build the versioned ZIP from a clean checkout of that tag. Request the JitPack
-build and require a successful result. The consumer coordinate is
-`com.github.pushfa:pushfa-android-sdk:2.0.3`; `settings.gradle.kts` must contain
-`maven { url = uri("https://jitpack.io") }`. Resolve that exact dependency from a
-clean consumer project before announcing the Maven/JitPack installation.
+The tag starts `.github/workflows/publish-maven-central.yml`. Require a successful
+workflow, then resolve `com.pushfa:pushfa-android-sdk:2.0.4` from a clean project
+that uses `mavenCentral()`.
 
-If a separate Pushfa Maven repository is later provided, publish it using
-`PUSHFA_MAVEN_URL`, `PUSHFA_MAVEN_USERNAME`, and `PUSHFA_MAVEN_PASSWORD`. Do not
-advertise `com.pushfa:pushfa-android-sdk` until that repository URL is public and
-the dependency resolves through it.
+Build the versioned ZIP from a clean checkout of the same tag. Request the JitPack
+build and require a successful result. The fallback consumer coordinate is
+`com.github.pushfa:pushfa-android-sdk:2.0.4`; `settings.gradle.kts` must contain
+`maven { url = uri("https://jitpack.io") }`.
+
+Verify the Maven Central and JitPack AARs contain the notification click Activity,
+exclude the old receiver, and have the same behavior before announcing either
+installation method.

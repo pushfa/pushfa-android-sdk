@@ -1,11 +1,14 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
-group = providers.environmentVariable("GROUP").orElse("com.pushfa").get()
-version = providers.environmentVariable("VERSION").orElse("2.0.3").get()
+val publicationGroup = providers.environmentVariable("GROUP").orElse("com.pushfa").get()
+val publicationVersion = providers.environmentVariable("VERSION").orElse("2.0.4").get()
+
+group = publicationGroup
+version = publicationVersion
 
 android {
     namespace = "com.pushfa.sdk"
@@ -25,11 +28,6 @@ android {
         jvmTarget = "17"
     }
 
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -38,32 +36,42 @@ dependencies {
     implementation("androidx.work:work-runtime:2.10.1")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                artifactId = "pushfa-android-sdk"
-                pom {
-                    name.set("Pushfa Android SDK")
-                    description.set("Pushfa subscriber, notification, topic, alias, and event SDK for Android")
-                    url.set("https://pushfa.com/index/doc/android-sdk")
-                }
+mavenPublishing {
+    coordinates(publicationGroup, "pushfa-android-sdk", publicationVersion)
+    publishToMavenCentral()
+
+    // Maven Central releases are signed in GitHub Actions. Keeping signing
+    // conditional allows JitPack to publish the same source without private keys.
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+
+    pom {
+        name.set("Pushfa Android SDK")
+        description.set("Pushfa subscriber, notification, topic, alias, event, delivery, and click SDK for Android")
+        inceptionYear.set("2026")
+        url.set("https://github.com/pushfa/pushfa-android-sdk")
+
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
             }
         }
 
-        val repositoryUrl = providers.environmentVariable("PUSHFA_MAVEN_URL").orNull
-        if (!repositoryUrl.isNullOrBlank()) {
-            repositories {
-                maven {
-                    name = "pushfa"
-                    url = uri(repositoryUrl)
-                    credentials {
-                        username = providers.environmentVariable("PUSHFA_MAVEN_USERNAME").orNull
-                        password = providers.environmentVariable("PUSHFA_MAVEN_PASSWORD").orNull
-                    }
-                }
+        developers {
+            developer {
+                id.set("pushfa")
+                name.set("Pushfa")
+                url.set("https://pushfa.com")
             }
+        }
+
+        scm {
+            url.set("https://github.com/pushfa/pushfa-android-sdk")
+            connection.set("scm:git:git://github.com/pushfa/pushfa-android-sdk.git")
+            developerConnection.set("scm:git:ssh://git@github.com/pushfa/pushfa-android-sdk.git")
         }
     }
 }

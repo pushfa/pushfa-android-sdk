@@ -1,5 +1,6 @@
 # Pushfa Android SDK v2
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.pushfa/pushfa-android-sdk.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.pushfa/pushfa-android-sdk)
 [![JitPack](https://jitpack.io/v/pushfa/pushfa-android-sdk.svg)](https://jitpack.io/#pushfa/pushfa-android-sdk)
 
 Native Android client for Pushfa subscriber identity, Firebase token registration,
@@ -56,48 +57,47 @@ Pushfa.initialize(this, new PushfaConfig("YOUR_PUBLIC_KEY"), result -> {
 });
 ```
 
-Tagged releases are published through JitPack. Add the repository in
-`settings.gradle.kts`, then add the SDK dependency:
+The recommended installation is Maven Central. Ensure `mavenCentral()` is present
+in `settings.gradle.kts`, then add the SDK dependency:
 
 ```kotlin
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
     }
 }
 
 // app/build.gradle.kts
 dependencies {
-    implementation("com.github.pushfa:pushfa-android-sdk:2.0.3")
+    implementation("com.pushfa:pushfa-android-sdk:2.0.4")
 }
 ```
 
-Do not use `com.pushfa:pushfa-android-sdk`; that coordinate requires a separate
-Pushfa Maven repository and is not available from Google Maven, Maven Central, or
-JitPack. The `2.0.3` JitPack build is published and verified; the downloaded
-source module remains available as an offline/fallback installation.
+Tagged releases are also available through JitPack. Add
+`maven { url = uri("https://jitpack.io") }` and use
+`com.github.pushfa:pushfa-android-sdk:2.0.4` only when Maven Central is not an
+option. The downloaded source module remains available as an offline fallback.
 
-## Upgrade from 2.0.1 or 2.0.2 to 2.0.3
+## Upgrade from 2.0.1, 2.0.2, or 2.0.3 to 2.0.4
 
-Version 2.0.3 fixes external/body/action links on Android 12 and newer, handles
-relative app routes such as `/promotion`, and correctly replaces displayed
-notifications that share a `collapse_id`. Do not use the 2.0.2 Git tag: it points
-to older source without these fixes. The source module is compiled against API 35
-and uses dependency versions that can be consumed by API-35 Android projects.
+Version 2.0.4 includes the external/body/action link and `collapse_id` corrections,
+and adds a signed Maven Central distribution. Do not use the 2.0.2 Git tag: it
+points to older source without these fixes. The source module is compiled against
+API 35 and uses dependency versions that can be consumed by API-35 Android
+projects.
 
-For a JitPack installation, update the dependency and sync the project:
+For the recommended Maven Central installation, update the dependency and sync:
 
 ```kotlin
 dependencies {
-    implementation("com.github.pushfa:pushfa-android-sdk:2.0.3")
+    implementation("com.pushfa:pushfa-android-sdk:2.0.4")
 }
 ```
 
 For a source-module installation, download the latest SDK ZIP and replace the
 entire existing `android-sdk/pushfa` directory. Do not merge the old and new
-directories: 2.0.3 removes `PushfaClickReceiver` and adds
+directories: current releases remove `PushfaClickReceiver` and add
 `PushfaNotificationClickActivity`. Then sync and rebuild the Android project.
 
 No migration, new permission, re-subscription, or app-data reset is required.
@@ -231,30 +231,36 @@ override fun onMessageReceived(message: RemoteMessage) {
 
 ## Publishing
 
-The source module produces an AAR and Maven publication. JitPack supplies `GROUP`
-and `VERSION`, then runs the publication task configured in `jitpack.yml`. For an
-optional separate Pushfa Maven repository, operations can publish with:
+The source module produces an AAR, sources jar, javadoc jar, POM, and signed Maven
+publication. GitHub Actions publishes release tags to Maven Central using these
+repository secrets:
 
 ```text
-PUSHFA_MAVEN_URL
-PUSHFA_MAVEN_USERNAME
-PUSHFA_MAVEN_PASSWORD
+MAVEN_CENTRAL_USERNAME
+MAVEN_CENTRAL_PASSWORD
+SIGNING_IN_MEMORY_KEY
+SIGNING_IN_MEMORY_KEY_PASSWORD
 ```
 
-Then publish with the Gradle `publish` task and expose the repository URL to
-customer apps. Do not put a Pushfa private API key or Firebase service-account JSON
-inside an Android application.
+JitPack supplies `GROUP` and `VERSION`, then runs the publication task configured
+in `jitpack.yml`. It does not receive the Maven Central signing secrets. Do not put
+a Pushfa private API key or Firebase service-account JSON inside an Android
+application.
 
 After the release changes are committed and verified, tag the exact release commit
-and push the tag. Version 2.0.2 must not be moved or reused; this corrected release
-uses 2.0.3:
+and push it. Version 2.0.2 must not be moved or reused; this release uses 2.0.4:
 
 ```shell
-git tag -a 2.0.3 -m "Pushfa Android SDK 2.0.3"
-git push origin 2.0.3
+git tag -a 2.0.4 -m "Pushfa Android SDK 2.0.4"
+git push origin 2.0.4
 ```
 
-Request and verify the JitPack build for that tag, then publish the downloadable
-ZIP from the same commit so every `2.0.3` distribution contains identical source.
-Follow `RELEASING.md` and do not advertise the dependency until it resolves from a
-clean consumer app.
+The tag starts the Maven Central workflow. Request and verify the JitPack build for
+the same tag, then publish the downloadable ZIP from that commit so every `2.0.4`
+distribution contains identical source. Follow `RELEASING.md` and do not advertise
+the dependency until it resolves from a clean consumer app.
+
+## License
+
+Pushfa Android SDK is available under the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).

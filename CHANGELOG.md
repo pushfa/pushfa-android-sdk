@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.4
+
+- Publish the SDK under `com.pushfa:pushfa-android-sdk` through Maven Central.
+- Add complete Maven POM metadata, Apache License 2.0, sources, javadoc, and
+  signed Central Portal releases.
+- Preserve the Android 12+ click-routing and stable `collapse_id` behavior from
+  version 2.0.3.
+- Keep JitPack publishing available from the same release tag.
+
 ## 2.0.3
 
 - Open notification-body and action-button links through an Activity
