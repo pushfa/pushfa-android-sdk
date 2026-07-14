@@ -28,11 +28,14 @@ internal object NotificationRenderer {
         val appLabel = runCatching {
             context.applicationInfo.loadLabel(context.packageManager).toString()
         }.getOrDefault("Pushfa")
-        val notificationId = message.id.hashCode() and Int.MAX_VALUE
+        // Android identifies an active notification by its (tag, id) pair. Both
+        // values must therefore be stable for every message sharing collapse_id.
+        val notificationKey = message.collapseId?.takeIf { it.isNotBlank() } ?: message.id
+        val notificationId = notificationKey.hashCode() and Int.MAX_VALUE
         val smallIcon = config.smallIconResId.takeIf { it != 0 }
             ?: android.R.drawable.ic_dialog_info
 
-        val contentIntent = PushfaClickReceiver.pendingIntent(
+        val contentIntent = PushfaNotificationClickActivity.pendingIntent(
             context = context,
             requestCode = notificationId,
             notificationId = message.id,
@@ -66,12 +69,12 @@ internal object NotificationRenderer {
         }
 
         message.actions.take(2).forEachIndexed { index, action ->
-            val actionIntent = PushfaClickReceiver.pendingIntent(
+            val actionIntent = PushfaNotificationClickActivity.pendingIntent(
                 context = context,
                 requestCode = notificationId + index + 1,
                 notificationId = message.id,
                 clickAckUrl = message.clickAckUrl,
-                targetUrl = action.url ?: message.url,
+                targetUrl = action.url?.takeIf { it.isNotBlank() } ?: message.url,
                 actionId = action.id,
             )
             builder.addAction(0, action.title, actionIntent)
@@ -79,7 +82,7 @@ internal object NotificationRenderer {
 
         return try {
             NotificationManagerCompat.from(context).notify(
-                message.collapseId ?: message.id,
+                notificationKey,
                 notificationId,
                 builder.build(),
             )

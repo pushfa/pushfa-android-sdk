@@ -31,6 +31,9 @@ import java.util.concurrent.TimeUnit
 object Pushfa {
     const val VERSION = PushfaSdkInfo.VERSION
     const val DEFAULT_PERMISSION_REQUEST_CODE = 7402
+    const val EXTRA_TARGET_URL = "com.pushfa.sdk.extra.TARGET_URL"
+    const val EXTRA_NOTIFICATION_ID = "com.pushfa.sdk.extra.NOTIFICATION_ID"
+    const val EXTRA_ACTION_ID = "com.pushfa.sdk.extra.ACTION_ID"
 
     private val executor = Executors.newFixedThreadPool(2)
     private val mainHandler = Handler(Looper.getMainLooper())

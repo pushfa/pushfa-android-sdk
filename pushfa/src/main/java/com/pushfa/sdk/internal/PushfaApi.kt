@@ -51,5 +51,5 @@ internal class PushfaApi(private val config: PushfaConfig) {
 }
 
 internal object PushfaSdkInfo {
-    const val VERSION = "2.0.0"
+    const val VERSION = "2.0.2"
 }

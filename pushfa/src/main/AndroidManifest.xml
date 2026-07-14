@@ -12,8 +12,13 @@
             </intent-filter>
         </service>
 
-        <receiver
-            android:name=".internal.PushfaClickReceiver"
-            android:exported="false" />
+        <activity
+            android:name=".internal.PushfaNotificationClickActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
     </application>
 </manifest>
