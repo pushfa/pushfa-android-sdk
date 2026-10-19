@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.1.0
+
+Based on 2.0.4; the public API and request flow are unchanged except for:
+
+- Display only Pushfa data messages (normal and lite) whose `sign` field is a
+  valid ECDSA P-256/SHA-256 signature over all data fields and this device's
+  registered token (or the token it just replaced, for messages in flight
+  during rotation). Unsigned, edited, or copied messages reach neither the
+  listener nor the renderer. `displayNotification()` accepts only such a
+  received message and renders it from its signed `rawData`.
+- Ask Pushfa before Firebase: the library disables Firebase Messaging auto-init,
+  and `initialize()`/`registerForPush()` request the FCM token only after
+  `/api/subscriber/ensure` succeeds. When Pushfa blocks new subscribers for the
+  service, a new install creates neither a Firebase token nor a subscriber.
+  Once Pushfa has accepted the install, the SDK turns auto-init back on when it
+  registers a token, so Firebase keeps refreshing and retrying it in the
+  background as in 2.0.4.
+- Make no more Pushfa requests than 2.0.4: a token fetched by
+  `initialize()`/`registerForPush()` is not registered again from `onNewToken`.
+- Fix visit and event tracking on Android 6.0 (API 23): the `XXX` date pattern
+  needs API 24, so timestamps now use a literal UTC `Z` with the same output.
+- Requires the Pushfa backend that signs Android SDK messages to be deployed first.
+
 ## 2.0.4
 
 - Publish the SDK under `com.pushfa:pushfa-android-sdk` through Maven Central.

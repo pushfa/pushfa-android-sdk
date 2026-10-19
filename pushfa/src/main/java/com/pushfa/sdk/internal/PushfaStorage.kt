@@ -59,8 +59,12 @@ internal class PushfaStorage(context: Context) {
 
     fun pushToken(): String? = preferences.getString(KEY_PUSH_TOKEN, null)
 
+    fun previousPushToken(): String? = preferences.getString(KEY_PREVIOUS_PUSH_TOKEN, null)
+
     fun savePushToken(value: String) {
-        preferences.edit().putString(KEY_PUSH_TOKEN, value).putBoolean(KEY_HAS_PUSH, true).apply()
+        val editor = preferences.edit().putString(KEY_PUSH_TOKEN, value).putBoolean(KEY_HAS_PUSH, true)
+        pushToken()?.takeIf { it != value }?.let { editor.putString(KEY_PREVIOUS_PUSH_TOKEN, it) }
+        editor.apply()
     }
 
     fun setHasPush(value: Boolean) {
@@ -137,6 +141,7 @@ internal class PushfaStorage(context: Context) {
         const val KEY_ACCENT_COLOR = "accent_color"
         const val KEY_SUBSCRIBER_ID = "subscriber_id"
         const val KEY_PUSH_TOKEN = "push_token"
+        const val KEY_PREVIOUS_PUSH_TOKEN = "previous_push_token"
         const val KEY_HAS_PUSH = "has_push"
         const val KEY_EXTERNAL_ID = "external_id"
         const val KEY_ALIASES = "aliases"

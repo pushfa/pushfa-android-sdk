@@ -27,10 +27,10 @@ data class PushfaMessage(
     val rawData: Map<String, String>,
 ) {
     internal companion object {
-        fun from(remoteMessage: RemoteMessage): PushfaMessage? {
-            val data = remoteMessage.data
+        fun from(remoteMessage: RemoteMessage): PushfaMessage? = from(remoteMessage.data, remoteMessage.notification)
+
+        fun from(data: Map<String, String>, notification: RemoteMessage.Notification? = null): PushfaMessage? {
             val id = data["id"]?.takeIf { it.isNotBlank() } ?: return null
-            val notification = remoteMessage.notification
             val title = data["title"] ?: notification?.title.orEmpty()
             val actions = parseActions(data)
 

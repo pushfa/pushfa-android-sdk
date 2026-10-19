@@ -17,6 +17,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.pushfa.sdk.internal.NotificationRenderer
 import com.pushfa.sdk.internal.PushfaApi
 import com.pushfa.sdk.internal.PushfaSdkInfo
+import com.pushfa.sdk.internal.PushfaSignature
 import com.pushfa.sdk.internal.PushfaStorage
 import org.json.JSONArray
 import org.json.JSONObject
@@ -37,6 +38,7 @@ object Pushfa {
 
     private val executor = Executors.newFixedThreadPool(2)
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val tokenLock = Any()
 
     @Volatile private var applicationContext: Context? = null
     @Volatile private var config: PushfaConfig? = null
@@ -54,10 +56,9 @@ object Pushfa {
         storage = localStorage
 
         execute(callback) {
-            ensureSubscriberBlocking()
+            val subscriberId = ensureSubscriberBlocking()
             if (config.autoRegister && areNotificationsEnabled(context)) {
-                val token = Tasks.await(FirebaseMessaging.getInstance().token, 30, TimeUnit.SECONDS)
-                registerTokenBlocking(token)
+                registerFirebaseTokenBlocking(subscriberId)
             }
             if (config.trackVisits) notifyVisitBlocking()
             syncStateBlocking()
@@ -105,8 +106,8 @@ object Pushfa {
             if (!areNotificationsEnabled(context)) {
                 throw PushfaException("Notification permission is not granted.")
             }
-            val token = Tasks.await(FirebaseMessaging.getInstance().token, 30, TimeUnit.SECONDS)
-            registerTokenBlocking(token)
+            // Pushfa must accept this subscriber before Firebase is asked for a token.
+            registerFirebaseTokenBlocking(ensureSubscriberBlocking())
         }
     }
 
@@ -265,6 +266,8 @@ object Pushfa {
         val runtime = runtimeFrom(context) ?: return false
         val message = PushfaMessage.from(remoteMessage) ?: return false
         if (message.rawData["validate_only"].equals("true", ignoreCase = true)) return true
+        // Only a message Pushfa signed for this device's token reaches the listener or display.
+        if (!isSignedForThisDevice(runtime, message.rawData)) return true
         val handledByHost = runCatching { notificationListener?.onNotificationReceived(message) == true }.getOrDefault(false)
         if (!handledByHost && runtime.config.autoDisplayNotifications) {
             NotificationRenderer.display(context.applicationContext, runtime.config, message)
@@ -275,7 +278,10 @@ object Pushfa {
     @JvmStatic
     fun displayNotification(context: Context, message: PushfaMessage): Boolean {
         val runtime = runtimeFrom(context) ?: return false
-        return NotificationRenderer.display(context.applicationContext, runtime.config, message)
+        if (!isSignedForThisDevice(runtime, message.rawData)) return false
+        // Display the signed data itself, never fields edited on the message object.
+        val signedMessage = PushfaMessage.from(message.rawData) ?: return false
+        return NotificationRenderer.display(context.applicationContext, runtime.config, signedMessage)
     }
 
     /** Delegate from an app-owned FirebaseMessagingService.onNewToken(). */
@@ -284,9 +290,19 @@ object Pushfa {
         runtimeFrom(context) ?: return
         if (!areNotificationsEnabled(context)) return
         executor.execute {
-            runCatching { registerTokenBlocking(token) }
+            runCatching {
+                // A token fetched by initialize/registerForPush is registered there.
+                synchronized(tokenLock) {
+                    if (storage?.pushToken() != token) registerTokenBlocking(token)
+                }
+            }
         }
     }
+
+    // The replaced token is accepted too, for messages already in flight during rotation.
+    private fun isSignedForThisDevice(runtime: Runtime, data: Map<String, String>): Boolean =
+        PushfaSignature.isValid(data, runtime.storage.pushToken()) ||
+            PushfaSignature.isValid(data, runtime.storage.previousPushToken())
 
     private fun mutateTopic(topicUuid: String, operation: String, callback: PushfaCallback<List<String>>?) {
         require(topicUuid.isNotBlank()) { "topicUuid must not be blank." }
@@ -327,9 +343,20 @@ object Pushfa {
         return serverId
     }
 
-    private fun registerTokenBlocking(token: String): PushfaState {
+    /**
+     * Asks Firebase for a token only after Pushfa accepted [subscriberId]. A new
+     * token also reaches onNewToken; the lock makes handleNewToken wait and skip it.
+     */
+    private fun registerFirebaseTokenBlocking(subscriberId: String): PushfaState = synchronized(tokenLock) {
+        val messaging = FirebaseMessaging.getInstance()
+        // From now on Firebase may refresh and retry the token in the background, as in 2.0.4.
+        messaging.isAutoInitEnabled = true
+        val token = Tasks.await(messaging.token, 30, TimeUnit.SECONDS)
+        registerTokenBlocking(token, subscriberId)
+    }
+
+    private fun registerTokenBlocking(token: String, subscriberId: String = ensureSubscriberBlocking()): PushfaState {
         val runtime = requireRuntime()
-        val subscriberId = ensureSubscriberBlocking()
         val oldToken = runtime.storage.pushToken()
         val parameters = mutableListOf(
             "api_public_key" to runtime.config.apiPublicKey,
@@ -378,7 +405,8 @@ object Pushfa {
         runtime.storage.saveLastVisitDate(today)
     }
 
-    private fun isoNow(): String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.US).apply {
+    // A literal Z (the formatter is UTC): the X pattern needs API 24 and throws on Android 6.0.
+    private fun isoNow(): String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")
     }.format(Date())
 

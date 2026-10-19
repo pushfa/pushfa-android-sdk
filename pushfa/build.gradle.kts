@@ -5,7 +5,7 @@ plugins {
 }
 
 val publicationGroup = providers.environmentVariable("GROUP").orElse("com.pushfa").get()
-val publicationVersion = providers.environmentVariable("VERSION").orElse("2.0.4").get()
+val publicationVersion = providers.environmentVariable("VERSION").orElse("2.1.0").get()
 
 group = publicationGroup
 version = publicationVersion

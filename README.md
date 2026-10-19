@@ -8,7 +8,7 @@
 
 SDK رسمی پوشفا برای اپلیکیشن‌های Android است. با این SDK می‌توانید دستگاه را در پوشفا ثبت کنید، اعلان Firebase را دریافت و نمایش دهید، کاربران را با Topic، External ID و Alias دسته‌بندی کنید، رویدادهای RetenX را بفرستید و گزارش تحویل و کلیک اعلان را ثبت کنید.
 
-نسخه فعلی: **2.0.4**
+نسخه فعلی: **2.1.0**
 
 ## فهرست
 
@@ -48,6 +48,7 @@ SDK رسمی پوشفا برای اپلیکیشن‌های Android است. با 
 | Additional Data | دریافت داده سفارشی پیام در اپلیکیشن |
 | Collapse ID | جایگزین کردن اعلان قبلی به‌جای ساخت اعلان جدید |
 | گزارش‌ها | ثبت تحویل و کلیک با تلاش مجدد خودکار هنگام بازگشت اینترنت |
+| امضای پیام | نمایش فقط پیام‌هایی که پوشفا برای توکن همین دستگاه امضا کرده است |
 | دریافت سفارشی | Listener برای تحلیل یا نمایش کاملاً سفارشی اعلان |
 | Kotlin و Java | API عمومی قابل استفاده در هر دو زبان |
 
@@ -74,7 +75,7 @@ SDK رسمی پوشفا برای اپلیکیشن‌های Android است. با 
 
 اگر Firebase اپ از قبل آماده است، برای دریافت اولین اعلان این پنج کار کافی است:
 
-1. Dependency نسخه <span dir="ltr"><code>2.0.4</code></span> را با Maven Central یا JitPack اضافه کنید.
+1. Dependency نسخه <span dir="ltr"><code>2.1.0</code></span> را با Maven Central یا JitPack اضافه کنید.
 2. فایل <span dir="ltr"><code>google-services.json</code></span> را در پوشه <span dir="ltr"><code>app/</code></span> بگذارید و Google Services plugin را فعال کنید.
 3. در <span dir="ltr"><code>Application.onCreate()</code></span>، متد <span dir="ltr"><code>Pushfa.initialize()</code></span> را با Public Key اجرا کنید.
 4. در Android 13+ مجوز اعلان را بگیرید و پس از تأیید، <span dir="ltr"><code>Pushfa.registerForPush()</code></span> را اجرا کنید.
@@ -105,7 +106,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.pushfa:pushfa-android-sdk:2.0.4")
+    implementation("com.pushfa:pushfa-android-sdk:2.1.0")
 }
 ```
 
@@ -126,7 +127,7 @@ dependencyResolutionManagement {
 
 // app/build.gradle
 dependencies {
-    implementation 'com.pushfa:pushfa-android-sdk:2.0.4'
+    implementation 'com.pushfa:pushfa-android-sdk:2.1.0'
 }
 ```
 
@@ -156,7 +157,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
+    implementation("com.github.pushfa:pushfa-android-sdk:2.1.0")
 }
 ```
 
@@ -178,17 +179,17 @@ dependencyResolutionManagement {
 
 // app/build.gradle
 dependencies {
-    implementation 'com.github.pushfa:pushfa-android-sdk:2.0.4'
+    implementation 'com.github.pushfa:pushfa-android-sdk:2.1.0'
 }
 ```
 
 </div>
 
-Artifact نسخه 2.0.4 در Maven Central و JitPack از یک سورس ساخته شده و AAR هر دو انتشار یکسان است. برای نصب عادی Maven Central انتخاب پیشنهادی است.
+Artifact نسخه 2.1.0 در Maven Central و JitPack از یک سورس ساخته شده و AAR هر دو انتشار یکسان است. برای نصب عادی Maven Central انتخاب پیشنهادی است.
 
 ### نصب آفلاین از سورس
 
-در صورت نیاز می‌توانید [فایل ZIP نسخه 2.0.4](https://pushfa.com/android-sdk/pushfa-android-sdk-2.0.4.zip) را دانلود کنید، پوشه SDK را کنار پروژه قرار دهید و ماژول <span dir="ltr"><code>pushfa</code></span> را اضافه کنید:
+در صورت نیاز می‌توانید [فایل ZIP نسخه 2.1.0](https://pushfa.com/android-sdk/pushfa-android-sdk-2.1.0.zip) را دانلود کنید، پوشه SDK را کنار پروژه قرار دهید و ماژول <span dir="ltr"><code>pushfa</code></span> را اضافه کنید:
 
 <div dir="ltr" align="left">
 
@@ -432,6 +433,8 @@ Log.d("Pushfa", "enabled=${Pushfa.areNotificationsEnabled(this)}")
 | External ID | شناسه اصلی کاربر در سیستم شما | پس از Login، مانند <span dir="ltr"><code>user-123</code></span> |
 | Custom Alias | چند شناسه برچسب‌دار برای یک کاربر | مانند <span dir="ltr"><code>mobile</code></span>، <span dir="ltr"><code>crm_id</code></span>، <span dir="ltr"><code>email_hash</code></span> یا <span dir="ltr"><code>tier</code></span> |
 
+در دریافت، ذخیره و ارسال، استفاده از `subscriber_id` و `subscriber_ids[]` به دلیل پایداری بیشتر توصیه می‌شود. شناسه را از getter مربوط به Subscriber ID دریافت و در Backend نگه دارید؛ توکن FCM تغییرپذیر است و دریافت آن برای کار فنی SDK یا سازگاری قدیمی است، نه انتخاب پیشنهادی برای هویت مخاطب.
+
 برای شناسایی کاربر به FCM token تکیه نکنید. توکن ممکن است Refresh شود. Subscriber ID در به‌روزرسانی عادی اپ باقی می‌ماند، ولی با Uninstall یا Clear Data پاک می‌شود.
 
 ## متدهای عمومی SDK
@@ -460,7 +463,7 @@ Pushfa.syncState { result ->
 | <span dir="ltr"><code>Pushfa.syncState(...)</code></span> | <span dir="ltr"><code>PushfaState</code></span> | دریافت آخرین وضعیت از سرور |
 | <span dir="ltr"><code>Pushfa.currentState()</code></span> | <span dir="ltr"><code>PushfaState?</code></span> | وضعیت Cache شده بدون درخواست شبکه |
 | <span dir="ltr"><code>Pushfa.getSubscriberId()</code></span> | <span dir="ltr"><code>String?</code></span> | Subscriber ID همین نصب |
-| <span dir="ltr"><code>Pushfa.getPushToken()</code></span> | <span dir="ltr"><code>String?</code></span> | FCM token ذخیره‌شده |
+| <span dir="ltr"><code>Pushfa.getPushToken()</code></span> | <span dir="ltr"><code>String?</code></span> | توکن فنی ذخیره‌شده؛ برای دریافت، ذخیره و ارسال، getSubscriberId() پایدارتر و توصیه‌شده است |
 | <span dir="ltr"><code>Pushfa.areNotificationsEnabled(context)</code></span> | <span dir="ltr"><code>Boolean</code></span> | بررسی Permission و تنظیمات اعلان Android |
 | <span dir="ltr"><code>Pushfa.requestNotificationPermission(activity)</code></span> | <span dir="ltr"><code>Boolean</code></span> | نمایش Permission؛ اگر درخواستی نمایش دهد <span dir="ltr"><code>true</code></span> است |
 | <span dir="ltr"><code>Pushfa.subscribeTopic(uuid, ...)</code></span> | <span dir="ltr"><code>List<String></code></span> | عضویت در Topic و دریافت لیست جدید |
@@ -703,6 +706,8 @@ SDK به‌صورت پیش‌فرض پیام‌های Data مربوط به پو�
 
 برای کار عادی نیازی به ساخت <span dir="ltr"><code>FirebaseMessagingService</code></span> جداگانه ندارید.
 
+از نسخه 2.1.0 فقط پیامی نمایش داده می‌شود که پوشفا آن را برای توکن همین دستگاه امضا کرده باشد. پیام‌های عادی و لایت پوشفا امضا دارند؛ پیامی که بدون پوشفا و مستقیم از Firebase ارسال شود نمایش داده نمی‌شود.
+
 ## لینک، Deep Link و دکمه‌های اعلان
 
 نسخه 2.0.4 برای کلیک بدنه و دکمه‌ها از Activity PendingIntent مستقیم استفاده می‌کند؛ بنابراین الگوی ممنوع Notification Trampoline در Android 12+ استفاده نمی‌شود.
@@ -822,7 +827,7 @@ Pushfa.setNotificationListener { message ->
 
 </div>
 
-<span dir="ltr"><code>displayNotification()</code></span> علاوه بر نمایش استاندارد، گزارش Delivery را نیز Queue می‌کند.
+<span dir="ltr"><code>displayNotification()</code></span> علاوه بر نمایش استاندارد، گزارش Delivery را نیز Queue می‌کند. این متد فقط پیام امضاشدهٔ دریافتی از پوشفا را نمایش می‌دهد و محتوا را از <span dir="ltr"><code>rawData</code></span> همان پیام می‌خواند؛ <span dir="ltr"><code>rawData</code></span> را تغییر ندهید.
 
 فیلدهای مهم <span dir="ltr"><code>PushfaMessage</code></span>:
 
@@ -960,12 +965,12 @@ Pushfa.setExternalId(null, result -> {
 
 ## ارتقا از نسخه‌های قبلی
 
-برای ارتقا از 2.0.1، 2.0.2 یا 2.0.3 فقط Dependency را به 2.0.4 تغییر دهید و پروژه را Sync/Rebuild کنید:
+برای ارتقا از نسخه‌های 2.0.x فقط Dependency را به 2.1.0 تغییر دهید و پروژه را Sync/Rebuild کنید:
 
 <div dir="ltr" align="left">
 
 ```kotlin
-implementation("com.pushfa:pushfa-android-sdk:2.0.4")
+implementation("com.pushfa:pushfa-android-sdk:2.1.0")
 ```
 
 </div>
@@ -975,10 +980,38 @@ implementation("com.pushfa:pushfa-android-sdk:2.0.4")
 <div dir="ltr" align="left">
 
 ```kotlin
-implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
+implementation("com.github.pushfa:pushfa-android-sdk:2.1.0")
 ```
 
 </div>
+
+تغییرات نسخه 2.1.0 نسبت به 2.0.4:
+
+- **امضای پیام:** پوشفا روی هر پیام (عادی و لایت) که برای دستگاه Android SDK ارسال می‌شود، امضای <span dir="ltr"><code>sign</code></span> می‌گذارد. SDK فقط پیامی را به Listener می‌دهد و نمایش می‌دهد که امضای آن برای توکن همین دستگاه معتبر باشد. پیامی که مستقیم از Firebase و بدون پوشفا ارسال شود یا محتوای آن تغییر کرده باشد نمایش داده نمی‌شود.
+- **<span dir="ltr"><code>displayNotification()</code></span>:** فقط همان <span dir="ltr"><code>PushfaMessage</code></span> دریافت‌شده از پوشفا را نمایش می‌دهد. پیام ساخته‌شده یا ویرایش‌شده در اپ نمایش داده نمی‌شود و مقدار <span dir="ltr"><code>false</code></span> برمی‌گردد.
+- **ممانعت از توکن جدید:** اگر پوشفا ثبت مشترک جدید را برای سرویس متوقف کرده باشد، در نصب تازه <span dir="ltr"><code>initialize()</code></span> و <span dir="ltr"><code>registerForPush()</code></span> با HTTP 403 تمام می‌شوند، Subscriber ساخته نمی‌شود و SDK اصلاً از Firebase توکن نمی‌گیرد. مشترکین فعلی مانند قبل کار می‌کنند.
+- **Firebase auto-init:** Manifest کتابخانه مقدار <span dir="ltr"><code>firebase_messaging_auto_init_enabled</code></span> را <span dir="ltr"><code>false</code></span> می‌کند تا Firebase پیش از تأیید پوشفا توکن نسازد. اولین توکن فقط در <span dir="ltr"><code>initialize()</code></span> با <span dir="ltr"><code>autoRegister = true</code></span> یا در <span dir="ltr"><code>registerForPush()</code></span> گرفته می‌شود؛ از همان لحظه SDK ساخت خودکار را دوباره روشن می‌کند تا Firebase مثل 2.0.4 توکن را در پس‌زمینه تازه کند و در خطای شبکه دوباره تلاش کند. اگر Manifest اپ این مقدار را <span dir="ltr"><code>true</code></span> کرده است آن را حذف کنید.
+- تعداد درخواست‌های SDK به پوشفا از نسخه 2.0.4 بیشتر نشده است.
+- **Android 6.0:** ثبت بازدید روزانه و <span dir="ltr"><code>trackEvent()</code></span> که در 2.0.4 روی Android 6.0 خطا می‌داد اصلاح شده است.
+
+| موضوع | 2.0.4 | 2.1.0 |
+|---|---|---|
+| ساخت اولین توکن FCM | Firebase هنگام اجرای اپ | فقط پس از تأیید پوشفا، در <span dir="ltr"><code>initialize()</code></span> با <span dir="ltr"><code>autoRegister = true</code></span> یا در <span dir="ltr"><code>registerForPush()</code></span> |
+| <span dir="ltr"><code>autoRegister = false</code></span> | ممکن است توکن بدون <span dir="ltr"><code>registerForPush()</code></span> هم ثبت شود | فقط <span dir="ltr"><code>registerForPush()</code></span> ثبت می‌کند |
+| پیام‌های نمایش‌داده‌شده | هر پیام data دارای <span dir="ltr"><code>id</code></span> | فقط پیام امضاشدهٔ پوشفا برای همین دستگاه |
+| <span dir="ltr"><code>displayNotification()</code></span> | هر <span dir="ltr"><code>PushfaMessage</code></span> | فقط پیام دریافتی از پوشفا |
+| توقف ثبت مشترک جدید | HTTP 403؛ Firebase توکن می‌سازد | HTTP 403؛ هیچ توکنی ساخته نمی‌شود |
+| ساعت گوشی | بی‌اثر | بی‌اثر |
+
+پیش از انتشار نسخهٔ اپ با 2.1.0 بررسی کنید:
+
+1. با <span dir="ltr"><code>autoRegister = false</code></span>، <span dir="ltr"><code>registerForPush()</code></span> پس از رضایت کاربر اجرا شود.
+2. Backend پیام‌های اپ را از وب‌سرویس پوشفا بفرستد، نه مستقیم از Firebase؛ پیام غیرپوشفا را بدون فیلد <span dir="ltr"><code>id</code></span> بفرستید.
+3. اعلان محلی با <span dir="ltr"><code>displayNotification()</code></span> ساخته نشود؛ از <span dir="ltr"><code>NotificationCompat</code></span> خود اپ استفاده کنید.
+4. خطای <span dir="ltr"><code>httpStatus == 403</code></span> به کاربر نمایش داده نشود و در حلقه تکرار نشود.
+5. Manifest اپ مقدار <span dir="ltr"><code>firebase_messaging_auto_init_enabled</code></span> را <span dir="ltr"><code>true</code></span> نکند.
+
+فهرست کامل تفاوت‌ها: [تفاوت نسخه 2.1.0 با 2.0.4](https://pushfa.com/index/doc/android-sdk-versions)
 
 نسخه 2.0.4 شامل اصلاح لینک بدنه و دکمه‌ها در Android 12+ و اصلاح جایگزینی اعلان با <span dir="ltr"><code>collapse_id</code></span> است.
 
@@ -987,7 +1020,7 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
 هیچ Migration، ثبت‌نام مجدد یا Uninstall لازم نیست. نسخه جدید اپ را مانند یک Update عادی منتشر کنید. از کاربر نخواهید اپ را حذف کند؛ Uninstall باعث حذف Subscriber ID و وضعیت محلی FCM می‌شود.
 
 > [!WARNING]
-> از Git tag نسخه 2.0.2 استفاده نکنید؛ آن Tag به سورس قدیمی قبل از اصلاح لینک و Collapse اشاره می‌کند. برای نصب از نسخه 2.0.4 استفاده کنید.
+> از Git tag نسخه 2.0.2 استفاده نکنید؛ آن Tag به سورس قدیمی قبل از اصلاح لینک و Collapse اشاره می‌کند. برای نصب از نسخه 2.1.0 استفاده کنید.
 
 ## رفع اشکال
 
@@ -1003,6 +1036,7 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
 - اینترنت و دسترسی به <span dir="ltr"><code>https://pushfa.com</code></span> را بررسی کنید.
 - درست بودن <span dir="ltr"><code>API Public Key</code></span> و تعلق آن به همان سرویس را بررسی کنید.
 - <span dir="ltr"><code>result.error?.httpStatus</code></span> و Logcat را بررسی کنید.
+- HTTP 403 با پیام توقف ثبت مشترک جدید یعنی پوشفا برای این سرویس ثبت مشترک و توکن جدید را متوقف کرده است. در این حالت SDK از Firebase توکن نمی‌گیرد.
 
 ### FCM token ساخته نمی‌شود
 
@@ -1010,6 +1044,7 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
 - Google Services plugin باید روی ماژول <span dir="ltr"><code>app</code></span> فعال باشد.
 - Firebase Project اپ و Service Account پوشفا باید یکی باشند.
 - در Android 13+ باید Permission تأیید شود و سپس <span dir="ltr"><code>registerForPush()</code></span> اجرا شود.
+- از نسخه 2.1.0 ساخت خودکار توکن Firebase تا تأیید پوشفا خاموش است؛ اولین توکن فقط پس از پاسخ موفق پوشفا در <span dir="ltr"><code>initialize()</code></span> با <span dir="ltr"><code>autoRegister = true</code></span> یا در <span dir="ltr"><code>registerForPush()</code></span> ساخته می‌شود.
 - Google Play Services و اینترنت دستگاه را بررسی کنید.
 
 ### اعلان دریافت می‌شود ولی نمایش داده نمی‌شود
@@ -1018,6 +1053,7 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
 - Channel پوشفا را در تنظیمات اعلان Android بررسی کنید؛ ممکن است کاربر آن را خاموش کرده باشد.
 - اگر Listener دارید، مطمئن شوید اشتباهاً <span dir="ltr"><code>true</code></span> برنمی‌گرداند.
 - اگر <span dir="ltr"><code>autoDisplayNotifications = false</code></span> است، نمایش اعلان بر عهده اپ شماست.
+- پیام باید از پوشفا ارسال شده باشد. از نسخه 2.1.0 پیام بدون امضای معتبر برای توکن همین دستگاه نمایش داده نمی‌شود.
 - مطمئن شوید فقط یک <span dir="ltr"><code>FirebaseMessagingService</code></span> مسئول پیام‌هاست.
 
 ### لینک خارجی یا مسیر داخلی باز نمی‌شود
@@ -1025,14 +1061,14 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.0.4")
 - برای لینک خارجی از URL معتبر با <span dir="ltr"><code>https://</code></span> استفاده کنید.
 - برای Custom Scheme یا App Link، Intent Filter اپ را تعریف کنید.
 - مسیر داخلی مانند <span dir="ltr"><code>/promotion</code></span> را در <span dir="ltr"><code>onCreate()</code></span> و <span dir="ltr"><code>onNewIntent()</code></span> پردازش کنید.
-- مطمئن شوید واقعاً نسخه 2.0.4 در Dependency tree نصب شده است.
+- مطمئن شوید واقعاً نسخه 2.1.0 در Dependency tree نصب شده است.
 
 ### <span dir="ltr"><code>collapse_id</code></span> اعلان جدید می‌سازد
 
 - هر دو پیام باید <span dir="ltr"><code>collapse_id</code></span> دقیقاً یکسان داشته باشند؛ فاصله و حروف نیز مهم‌اند.
 - اعلان‌های باقی‌مانده از نسخه قدیمی را پیش از تست پاک کنید.
 - فقط اعلان فعال قابل Update است.
-- نصب واقعی نسخه 2.0.4 را در Gradle Dependency tree بررسی کنید.
+- نصب واقعی نسخه 2.1.0 را در Gradle Dependency tree بررسی کنید.
 
 ### بررسی نسخه SDK در زمان اجرا
 
@@ -1049,17 +1085,17 @@ Log.d("Pushfa", "SDK version=${Pushfa.VERSION}")
 <div dir="ltr" align="left">
 
 ```text
-SDK version=2.0.4
+SDK version=2.1.0
 ```
 
 </div>
 
 ## لینک‌های انتشار
 
-- [Maven Central](https://central.sonatype.com/artifact/com.pushfa/pushfa-android-sdk/2.0.4)
-- [JitPack](https://jitpack.io/#pushfa/pushfa-android-sdk/2.0.4)
+- [Maven Central](https://central.sonatype.com/artifact/com.pushfa/pushfa-android-sdk/2.1.0)
+- [JitPack](https://jitpack.io/#pushfa/pushfa-android-sdk/2.1.0)
 - [GitHub Releases](https://github.com/pushfa/pushfa-android-sdk/releases)
-- [دانلود ZIP نسخه 2.0.4](https://pushfa.com/android-sdk/pushfa-android-sdk-2.0.4.zip)
+- [دانلود ZIP نسخه 2.1.0](https://pushfa.com/android-sdk/pushfa-android-sdk-2.1.0.zip)
 
 ## مجوز
 
