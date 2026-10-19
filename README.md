@@ -10,6 +10,8 @@ SDK رسمی پوشفا برای اپلیکیشن‌های Android است. با 
 
 نسخه فعلی: **2.1.0**
 
+نسخه 2.1.0 پیشنهادی است و نسخه 2.0.4 هم همچنان کار می‌کند. اگر اپ شما روی 2.0.4 مانده است، [README نسخه 2.0.4](https://github.com/pushfa/pushfa-android-sdk/blob/2.0.4/README.md) را ببینید. تفاوت دو نسخه و مراحل ارتقا در بخش [ارتقا از نسخه‌های قبلی](#ارتقا-از-نسخههای-قبلی) آمده است.
+
 ## فهرست
 
 - [قابلیت‌ها](#قابلیت‌ها)
@@ -1012,6 +1014,8 @@ implementation("com.github.pushfa:pushfa-android-sdk:2.1.0")
 5. Manifest اپ مقدار <span dir="ltr"><code>firebase_messaging_auto_init_enabled</code></span> را <span dir="ltr"><code>true</code></span> نکند.
 
 فهرست کامل تفاوت‌ها: [تفاوت نسخه 2.1.0 با 2.0.4](https://pushfa.com/index/doc/android-sdk-versions)
+
+اگر فعلاً روی 2.0.4 می‌مانید، کد فعلی بدون تغییر کار می‌کند و مرجع کامل همان نسخه [README نسخه 2.0.4](https://github.com/pushfa/pushfa-android-sdk/blob/2.0.4/README.md) است.
 
 نسخه 2.0.4 شامل اصلاح لینک بدنه و دکمه‌ها در Android 12+ و اصلاح جایگزینی اعلان با <span dir="ltr"><code>collapse_id</code></span> است.
 
